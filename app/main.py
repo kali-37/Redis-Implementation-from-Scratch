@@ -1,15 +1,41 @@
 import socket  
+import asyncio
 
+HOST = "127.0.0.1"
+PORT = 6379
 
-def main():
-    print("Logs from your program will appear here!")
+async def redis_serv(con, usr_addr):
+    loop = asyncio.get_running_loop()
+    try:
+        while True:
+                data = await loop.sock_recv(con,1024)
+                if not data : 
+                    break
+                message = data.decode().strip()
+                if "PING" in message:
+                    await loop.sock_sendall(con,b"+PONG\r\n")
+    except ConnectionResetError:
+        pass
+    finally:
+        con.close()
 
-    server_socket = socket.create_server(("localhost", 6379), reuse_port=True)
-    con ,usr_addr = server_socket.accept() 
-    while True:
-        con.recv(1024)
-        con.send(b"+PONG\r\n")
-
+async def main():
+    loop = asyncio.get_running_loop()
+    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM) 
+    s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+    s.bind((HOST,PORT))
+    s.listen()
+    s.setblocking(False)
+    try:
+        while True:
+            con , usr_addr = await loop.sock_accept(s)
+            con.setblocking(False)
+            asyncio.create_task(redis_serv(con,usr_addr))
+    except KeyboardInterrupt:
+        s.close()
+    finally:
+        s.close()
+        
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
