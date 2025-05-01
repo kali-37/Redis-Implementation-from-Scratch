@@ -193,13 +193,13 @@ async def redis_serv(con, usr_addr):
                     if len(commands) > 3 and len(commands) >= 5:
                         if commands[3].upper() == "PX":
                             try:
-                                expiry = int(time.time() + commands[4] / 1000)
+                                expiry = int(time.time() + int(commands[4]) / 1000)
                             except ValueError:
                                 await loop.sock_sendall(con, b"-ERR invalid expire time in 'set' command\r\n")
                                 continue
                         elif commands[3].upper() == "EX":
                             try:
-                                expiry = int(time.time() + commands[4])
+                                expiry = int(time.time() + int(commands[4]))
                             except ValueError:
                                 await loop.sock_sendall(con, b"-ERR invalid expire time in 'set' command\r\n")
                                 continue
