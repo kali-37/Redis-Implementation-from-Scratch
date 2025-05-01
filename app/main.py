@@ -24,12 +24,6 @@ class Commands(Enum):
     PX = "PX"
     EX = "EX"
 
-
-class ProtocolCommands(Enum):
-    ASTERISK = "*"
-    DOLLAR = "$"
-
-
 @dataclass
 class DataTypes:
     SIMPLE_STRINGS: str = "+"
@@ -131,9 +125,9 @@ class Protocol:
         while self.is_unbound():
             current_val = self.data[self.pointer]
             
-            if current_val == "*":
+            if current_val == DataTypes.ARRAYS:
                 self.handle_asterisk()
-            elif current_val == "$":
+            elif current_val == DataTypes.BULK_STRINGS:
                 if not self.handle_dollar():
                     break
             else:
