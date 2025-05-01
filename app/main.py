@@ -13,7 +13,7 @@ PORT = 6379
 class KeyValuePair:
     key: str
     value: str
-    expiry: int = 0  # 0 means no expiry
+    expiry: float= 0  # 0 means no expiry
 
 
 class Commands(Enum):
@@ -149,7 +149,8 @@ redis_store = {}
 def check_expiry(key):
     """Check if a key has expired and remove it if necessary"""
     if key in redis_store and redis_store[key].expiry != 0:
-        if redis_store[key].expiry < int(time.time()):
+        print(f"EXPIRY TIME {redis_store[key].expiry} and CURRENT TIME { time.time()}")
+        if redis_store[key].expiry < time.time():
             del redis_store[key]
             return False
     return key in redis_store
@@ -193,13 +194,14 @@ async def redis_serv(con, usr_addr):
                     if len(commands) > 3 and len(commands) >= 5:
                         if commands[3].upper() == "PX":
                             try:
-                                expiry = int(time.time() + int(commands[4]) / 1000)
+                                expiry =time.time() + int(commands[4]) / 1000
+                                print("EXPIRY was: ",expiry)
                             except ValueError:
                                 await loop.sock_sendall(con, b"-ERR invalid expire time in 'set' command\r\n")
                                 continue
                         elif commands[3].upper() == "EX":
                             try:
-                                expiry = int(time.time() + int(commands[4]))
+                                expiry =time.time() + int(commands[4])
                             except ValueError:
                                 await loop.sock_sendall(con, b"-ERR invalid expire time in 'set' command\r\n")
                                 continue
@@ -217,7 +219,7 @@ async def redis_serv(con, usr_addr):
                         response = f"${len(value)}\r\n{value}\r\n"
                         await loop.sock_sendall(con, response.encode('utf-8'))
                     else:
-                        await loop.sock_sendall(con, b"$-1\r\n")
+                        await loop.sock_sendall(con, "$-1\r\n".encode('utf-8'))
             
             else:
                 error_msg = f"-ERR unknown command '{command}'\r\n"
