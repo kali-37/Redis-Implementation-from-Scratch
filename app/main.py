@@ -147,9 +147,7 @@ redis_store = {}
 
 
 def check_expiry(key):
-    """Check if a key has expired and remove it if necessary"""
     if key in redis_store and redis_store[key].expiry != 0:
-        print(f"EXPIRY TIME {redis_store[key].expiry} and CURRENT TIME { time.time()}")
         if redis_store[key].expiry < time.time():
             del redis_store[key]
             return False
