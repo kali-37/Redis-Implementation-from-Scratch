@@ -1,0 +1,1 @@
+CLRF_VALUE = "/r/n"
